@@ -1,16 +1,31 @@
 <?php
     class IcapClient {
+        /** @var string $host Address of ICAP server */
         private $host;
+        /** @var int $port Port number */
         private $port;
+        /** @var socket $socket Socket object */
         private $socket;
 
+        /** @var string $userAgent User agent string */
         public $userAgent = 'PHP-ICAP-CLIENT/0.0.1';
 
+        /**
+         * Constructor
+         *
+         * @param string $host IP address of ICAP server
+         * @param int $port Port number
+         */
         public function __construct($host, $port) {
             $this->host = $host;
             $this->port = $port;
         }
 
+        /**
+         * Connect to ICAP server
+         *
+         * @return boolean True if successful
+         */
         private function connect() {
             $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
@@ -21,15 +36,32 @@
             return true;
         }
 
+        /**
+         * Close connection to ICAP server
+         */
         private function disconnect() {
             socket_shutdown($this->socket);
             socket_close($this->socket);
         }
 
+        /**
+         * Get last error code from socket object
+         *
+         * @return int Socket error code
+         */
         public function getLastSocketError() {
             return socket_last_error($this->socket);
         }
 
+        /**
+         * Generate request string
+         *
+         * @param string $method ICAP method
+         * @param string $service ICAP service
+         * @param string|boolean $body ICAP request body or false
+         * @param array $headers Array of headers
+         * @return string Request string
+         */
         public function getRequest($method, $service, $body = false, $headers = []) {
             if (!array_key_exists('Host', $headers)) {
                 $headers['Host'] = $this->host;
@@ -59,6 +91,13 @@
             return $request;
         }
 
+        /**
+         * Send OPTIONS request
+         *
+         * @param string $service ICAP service
+         * @return array Response array
+         * @throws RuntimeException
+         */
         public function options($service) {
             $request = $this->getRequest('OPTIONS', $service);
             $response = $this->send($request);
@@ -66,6 +105,14 @@
             return $this->parseResponse($response);
         }
 
+        /**
+         * Send RESPMOD request
+         *
+         * @param string $service ICAP service
+         * @param string|boolean $body Body content or false
+         * @return array Response array
+         * @throws RuntimeException
+         */
         public function respmod($service, $body = false) {
             $headers = [];
             if (false !== $body) {
@@ -78,6 +125,14 @@
             return $this->parseResponse($response);
         }
 
+        /**
+         * Send REQMOD request
+         *
+         * @param string $service ICAP service
+         * @param string|boolean $body Body content or false
+         * @return array Response array
+         * @throws RuntimeException
+         */
         public function reqmod($service, $body = false) {
             $headers = [];
             if (false !== $body) {
@@ -90,6 +145,13 @@
             return $this->parseResponse($response);
         }
 
+        /**
+         * Send request
+         *
+         * @param string $request Request string
+         * @return string Response string
+         * @throws RuntimeException
+         */
         public function send($request) {
             if (!$this->connect()) {
                 throw new RuntimeException("Cannot connect to icap://{$this->host}:{$this->port} (Socket error: ".$this->getLastSocketError().")");
@@ -106,6 +168,13 @@
             return $response;
         }
 
+        /**
+         * Parse response string
+         *
+         * @param string $response Response string
+         * @return array Response array
+         * @throws RuntimeException
+         */
         private function parseResponse($response) {
             $responseArray = [
                 'protocol' => [],
