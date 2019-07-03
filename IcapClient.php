@@ -1,5 +1,6 @@
 <?php
-    class IcapClient {
+    class IcapClient
+    {
         /** @var string $host Address of ICAP server */
         private $host;
         /** @var int $port Port number */
@@ -16,7 +17,8 @@
          * @param string $host IP address of ICAP server
          * @param int $port Port number
          */
-        public function __construct($host, $port) {
+        public function __construct($host, $port)
+        {
             $this->host = $host;
             $this->port = $port;
         }
@@ -26,7 +28,8 @@
          *
          * @return boolean True if successful
          */
-        private function connect() {
+        private function connect()
+        {
             $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
             if (!socket_connect($this->socket, $this->host, $this->port)) {
@@ -39,7 +42,8 @@
         /**
          * Close connection to ICAP server
          */
-        private function disconnect() {
+        private function disconnect()
+        {
             socket_shutdown($this->socket);
             socket_close($this->socket);
         }
@@ -49,7 +53,8 @@
          *
          * @return int Socket error code
          */
-        public function getLastSocketError() {
+        public function getLastSocketError()
+        {
             return socket_last_error($this->socket);
         }
 
@@ -62,7 +67,8 @@
          * @param array $headers Array of headers
          * @return string Request string
          */
-        public function getRequest($method, $service, $body = false, $headers = []) {
+        public function getRequest($method, $service, $body = false, $headers = [])
+        {
             if (!array_key_exists('Host', $headers)) {
                 $headers['Host'] = $this->host;
             }
@@ -98,7 +104,8 @@
          * @return array Response array
          * @throws RuntimeException
          */
-        public function options($service) {
+        public function options($service)
+        {
             $request = $this->getRequest('OPTIONS', $service);
             $response = $this->send($request);
 
@@ -113,7 +120,8 @@
          * @return array Response array
          * @throws RuntimeException
          */
-        public function respmod($service, $body = false) {
+        public function respmod($service, $body = false)
+        {
             $headers = [];
             if (false !== $body) {
                 $headers['Encapsulated'] = 'res-body=0';
@@ -133,7 +141,8 @@
          * @return array Response array
          * @throws RuntimeException
          */
-        public function reqmod($service, $body = false) {
+        public function reqmod($service, $body = false)
+        {
             $headers = [];
             if (false !== $body) {
                 $headers['Encapsulated'] = 'req-body=0';
@@ -152,7 +161,8 @@
          * @return string Response string
          * @throws RuntimeException
          */
-        public function send($request) {
+        public function send($request)
+        {
             if (!$this->connect()) {
                 throw new RuntimeException("Cannot connect to icap://{$this->host}:{$this->port} (Socket error: ".$this->getLastSocketError().")");
             }
@@ -175,7 +185,8 @@
          * @return array Response array
          * @throws RuntimeException
          */
-        private function parseResponse($response) {
+        private function parseResponse($response)
+        {
             $responseArray = [
                 'protocol' => [],
                 'headers' => []
