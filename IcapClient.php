@@ -75,17 +75,17 @@
                 $headers['Connection'] = 'close';
             }
 
-            $request = "{$method} icap://{$this->host}/{$service} ICAP/1.0\n";
+            $request = "{$method} icap://{$this->host}/{$service} ICAP/1.0\r\n";
             foreach ($headers as $header => $value) {
-                $request .= "{$header}: {$value}\n";
+                $request .= "{$header}: {$value}\r\n";
             }
 
-            $request .= "\n";
+            $request .= "\r\n";
 
             if (false !== $body) {
-                $request .= dechex(strlen($body))."\n";
+                $request .= dechex(strlen($body))."\r\n";
                 $request .= $body;
-                $request .= "\n\n0\n\n\n";
+                $request .= "\r\n0\r\n\r\n";
             }
 
             return $request;
