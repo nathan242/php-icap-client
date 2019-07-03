@@ -4,8 +4,6 @@ PHP ICAP client.
 
 Allows you to send requests to Internet Content Adaptation Protocol (ICAP) servers from PHP.
 
-This is a work in progress. Functionality is currently very limited.
-
 ### Usage
 
 Instantiate the class with the ICAP server address and port:
@@ -23,8 +21,21 @@ $icap->options('example');
 Send a REQMOD and RESPMOD request to the "example" service:
 
 ```php
-$icap->reqmod('example', 'Hello World!');
-$icap->respmod('example', 'Hello World!');
+$icap->reqmod(
+    'example',
+    [
+        'req-hdr' => "POST /test HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n",
+        'req-body' => 'This is another test.'
+    ]
+);
+
+$icap->respmod(
+    'example',
+    [
+        'res-hdr' => "HTTP/1.1 200 OK\r\nServer: Test/0.0.1\r\nContent-Type: text/html\r\n\r\n",
+        'res-body' => 'This is a test.'
+    ]
+);
 ```
 
 Successful requests will return an array describing the response:

@@ -63,11 +63,11 @@
          *
          * @param string $method ICAP method
          * @param string $service ICAP service
-         * @param string|boolean $body ICAP request body or false
+         * @param array $body Request body data
          * @param array $headers Array of headers
          * @return string Request string
          */
-        public function getRequest($method, $service, $body = false, $headers = [])
+        public function getRequest($method, $service, $body = [], $headers = [])
         {
             if (!array_key_exists('Host', $headers)) {
                 $headers['Host'] = $this->host;
@@ -81,18 +81,49 @@
                 $headers['Connection'] = 'close';
             }
 
+            $bodyData = '';
+            $hasBody = false;
+            $encapsulated = [];
+            foreach ($body as $type => $data) {
+                switch ($type) {
+                    case 'req-hdr':
+                    case 'res-hdr':
+                        $encapsulated[$type] = strlen($bodyData);
+                        $bodyData .= $data;
+                        break;
+
+                    case 'req-body':
+                    case 'res-body':
+                        $encapsulated[$type] = strlen($bodyData);
+                        $bodyData .= dechex(strlen($data))."\r\n";
+                        $bodyData .= $data;
+                        $bodyData .= "\r\n";
+                        $hasBody = true;
+                        break;
+                }
+            }
+
+            if ($hasBody) {
+                $bodyData .= "0\r\n\r\n";
+            } elseif (count($encapsulated) > 0) {
+                $encapsulated['null-body'] = strlen($bodyData);
+            }
+
+            if (count($encapsulated) > 0) {
+                $headers['Encapsulated'] = '';
+                foreach ($encapsulated as $section => $offset) {
+                    $headers['Encapsulated'] .= $headers['Encapsulated'] === '' ? '' : ', ';
+                    $headers['Encapsulated'] .= "{$section}={$offset}";
+                }
+            }
+
             $request = "{$method} icap://{$this->host}/{$service} ICAP/1.0\r\n";
             foreach ($headers as $header => $value) {
                 $request .= "{$header}: {$value}\r\n";
             }
 
             $request .= "\r\n";
-
-            if (false !== $body) {
-                $request .= dechex(strlen($body))."\r\n";
-                $request .= $body;
-                $request .= "\r\n0\r\n\r\n";
-            }
+            $request .= $bodyData;
 
             return $request;
         }
@@ -116,17 +147,12 @@
          * Send RESPMOD request
          *
          * @param string $service ICAP service
-         * @param string|boolean $body Body content or false
+         * @param array $body Request body data
          * @return array Response array
          * @throws RuntimeException
          */
-        public function respmod($service, $body = false)
+        public function respmod($service, $body = [], $headers = [])
         {
-            $headers = [];
-            if (false !== $body) {
-                $headers['Encapsulated'] = 'res-body=0';
-            }
-
             $request = $this->getRequest('RESPMOD', $service, $body, $headers);
             $response = $this->send($request);
 
@@ -137,17 +163,12 @@
          * Send REQMOD request
          *
          * @param string $service ICAP service
-         * @param string|boolean $body Body content or false
+         * @param array $body Request body data
          * @return array Response array
          * @throws RuntimeException
          */
-        public function reqmod($service, $body = false)
+        public function reqmod($service, $body = [], $headers = [])
         {
-            $headers = [];
-            if (false !== $body) {
-                $headers['Encapsulated'] = 'req-body=0';
-            }
-
             $request = $this->getRequest('REQMOD', $service, $body, $headers);
             $response = $this->send($request);
 
