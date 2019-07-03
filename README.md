@@ -52,13 +52,26 @@ Array
 
     [headers] => Array
         (
-            [Date] => Sun, 09 Jun 2019 15:43:08 GMT
-            [ISTag] => N26W1Q5ZURSA16S3HKKZWE0L2O68PEVG
-            [Server] => ICAP/1.3 Python/2.7.13
+            [Date] => Wed, 03 Jul 2019 22:11:33 GMT
+            [ISTag] => X7K07GDZQW702ZVLSG6WWO0EPE2CTOMR
+            [Encapsulated] => res-hdr=0, res-body=64
+            [Server] => ICAP/1.3 Python/2.7.3
         )
 
-    [body] => c
-Hello World!
+    [body] => Array
+        (
+            [res-hdr] => HTTP/1.1 200 OK
+content-type: text/html
+server: Test/0.0.1
+            [res-body] => This is a test.
+        )
+
+    [rawBody] => HTTP/1.1 200 OK
+content-type: text/html
+server: Test/0.0.1
+
+f
+This is a test.
 0
 
 

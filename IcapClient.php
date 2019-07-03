@@ -9,7 +9,7 @@
         private $socket;
 
         /** @var string $userAgent User agent string */
-        public $userAgent = 'PHP-ICAP-CLIENT/0.0.1';
+        public $userAgent = 'PHP-ICAP-CLIENT/0.5.0';
 
         /**
          * Constructor
@@ -210,7 +210,9 @@
         {
             $responseArray = [
                 'protocol' => [],
-                'headers' => []
+                'headers' => [],
+                'body' => [],
+                'rawBody' => ''
             ];
 
             foreach (preg_split('/\r?\n/', $response) as $line) {
@@ -242,7 +244,41 @@
 
             $body = preg_split('/\r?\n\r?\n/', $response, 2);
             if (isset($body[1])) {
-                $responseArray['body'] = $body[1];
+                $responseArray['rawBody'] = $body[1];
+
+                if (array_key_exists('Encapsulated', $responseArray['headers'])) {
+                    $encapsulated = [];
+                    $params = preg_split('/, /', $responseArray['headers']['Encapsulated']);
+
+                    if (count($params) > 0) {
+                        foreach ($params as $param) {
+                            $parts = preg_split('/=/', $param);
+                            if (count($parts) !== 2) {
+                                continue;
+                            }
+
+                            $encapsulated[$parts[0]] = $parts[1];
+                        }
+                    }
+
+                    foreach ($encapsulated as $section => $offset) {
+                        $data = substr($body[1], $offset);
+                        switch ($section) {
+                            case 'req-hdr':
+                            case 'res-hdr':
+                                $responseArray['body'][$section] = preg_split('/\r?\n\r?\n/', $data, 2)[0];
+                                break;
+
+                            case 'req-body':
+                            case 'res-body':
+                                $parts = preg_split('/\r?\n/', $data, 2);
+                                if (count($parts) === 2) {
+                                    $responseArray['body'][$section] = substr($parts[1], 0, hexdec($parts[0]));
+                                }
+                                break;
+                        }
+                    }
+                }
             }
 
             return $responseArray;
