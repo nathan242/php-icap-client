@@ -1,4 +1,6 @@
 <?php
+    namespace IcapClient;
+
     class IcapClient
     {
         /** @var string $host Address of ICAP server */
