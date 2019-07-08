@@ -1,6 +1,8 @@
 <?php
     namespace IcapClient;
 
+    use RuntimeException;
+
     class IcapClient
     {
         /** @var string $host Address of ICAP server */

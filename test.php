@@ -1,5 +1,7 @@
 <?php
-    require 'IcapClient.php';
+    require_once __DIR__.'/vendor/autoload.php';
+
+    use IcapClient\IcapClient;
 
     $icap = new IcapClient('127.0.0.1', 13440);
 
