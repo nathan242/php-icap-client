@@ -2,7 +2,7 @@
     "name": "nathan242/php-icap-client",
     "description": "Internet Content Adaptation Protocol (ICAP) client library",
     "type": "library",
-    "license": "GPL-3.0-or-later",
+    "license": "MIT",
     "authors": [
         {
             "name": "Nathan Patrizi",
